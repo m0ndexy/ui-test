@@ -17,6 +17,7 @@ return function(card, cfg)
         Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(34, 18), Parent = row,
     })
     corner(switch, 9)
+    Util.attachPressEffect(switch, false, 0.94)
     local rim = Util.stroke(switch, nil, 0.18)
     local knob = create("Frame", { Name = "Knob", Position = UDim2.fromOffset(2, 2), Size = UDim2.fromOffset(14, 14), BorderSizePixel = 0, Parent = switch })
     corner(knob, 7)
@@ -52,14 +53,25 @@ return function(card, cfg)
 
     local function render(animate)
         local on = element.Value
-        local duration = animate and 0.15 or nil
+        local duration = animate and 0.2 or nil
         -- Qustah switch: on = input tinted with the accent, knob always light grey, accent rim when on
         Theme.tweenTo(switch, "BackgroundColor3", on and "toggleOn" or "buttonEdge", duration)
         Theme.bind(knob, "BackgroundColor3", "knob")
         Theme.tweenTo(rim, "Color", on and "accent" or "line", duration)
         rim.Transparency = on and 0.6 or 0.18
-        local position = UDim2.fromOffset(on and 18 or 2, 2)
-        if animate then Util.tween(knob, 0.15, { Position = position }) else knob.Position = position end
+        local targetX = on and 18 or 2
+        local targetPos = UDim2.fromOffset(targetX, 2)
+        if animate then
+            -- macOS squash-and-stretch fluid spring
+            Util.tween(knob, 0.1, { Size = UDim2.fromOffset(18, 14) }, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            Util.tween(knob, 0.2, { Position = targetPos }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            task.delay(0.1, function()
+                Util.tween(knob, 0.1, { Size = UDim2.fromOffset(14, 14) }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            end)
+        else
+            knob.Position = targetPos
+            knob.Size = UDim2.fromOffset(14, 14)
+        end
     end
 
     function element:Set(value, silent)

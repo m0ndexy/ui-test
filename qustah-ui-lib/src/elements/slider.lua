@@ -44,6 +44,7 @@ return function(card, cfg)
     local knob = create("Frame", { Name = "Knob", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0, 0.5), Size = UDim2.fromOffset(10, 10), BorderSizePixel = 0, ZIndex = 2, Parent = track })
     Theme.bind(knob, "BackgroundColor3", "accent")
     corner(knob, 5)
+    local knobScale = create("UIScale", { Name = "macOSKnobScale", Scale = 1, Parent = knob })
     -- (taller on touch screens: easier to catch with a finger)
     local reach = Util.isTouch() and 8 or 0
     local hit = create("TextButton", { Name = "Hit", Text = "", AutoButtonColor = false, BackgroundTransparency = 1, Position = UDim2.new(0, inset - 6, 0, top - reach), Size = UDim2.new(1, 12 - inset * 2, 0, 18 + reach * 2), ZIndex = 3, Parent = row })
@@ -55,6 +56,7 @@ return function(card, cfg)
     Theme.bind(bubble, "BackgroundColor3", "selected")
     Theme.bind(bubble, "TextColor3", "heading")
     corner(bubble, 5)
+    local bubbleScale = create("UIScale", { Name = "macOSBubbleScale", Scale = 1, Parent = bubble })
     Util.padding(bubble, 7, 7, 0, 0)
     Theme.bind(Util.stroke(bubble), "Color", "buttonEdge")
 
@@ -98,12 +100,23 @@ return function(card, cfg)
     end
     hit.InputBegan:Connect(function(input)
         if not Util.isPress(input) or element.Locked then return end
-        bubble.Visible = cfg.Bubble ~= false
+        if cfg.Bubble ~= false then
+            bubble.Visible = true
+            bubbleScale.Scale = 0.75
+            Util.tween(bubbleScale, 0.18, { Scale = 1 }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        end
+        Util.tween(knobScale, 0.16, { Scale = 1.25 }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
         dragging, movedWhileDragging = true, false
         element.Dragging = true
         fromPoint(Util.pointer(input))
         window:_beginDrag(input, fromPoint, function()
-            bubble.Visible = false
+            Util.tween(knobScale, 0.16, { Scale = 1 }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            if bubble.Visible then
+                Util.tween(bubbleScale, 0.12, { Scale = 0.75 }, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+                task.delay(0.12, function()
+                    if not dragging then bubble.Visible = false end
+                end)
+            end
             dragging = false
             element.Dragging = false
             if movedWhileDragging then element:_fire(element.Value, false, false) end -- released: the final value

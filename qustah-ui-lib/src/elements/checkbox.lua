@@ -13,7 +13,9 @@ return function(card, cfg)
     local box = create("Frame", { Name = "Box", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 0, 0, cfg.Desc and 12 or 14), Size = UDim2.fromOffset(16, 16), BorderSizePixel = 0, Parent = row })
     corner(box, 4)
     local edge = stroke(box)
+    Util.attachPressEffect(box, false, 0.92)
     local tick = Icons.themed(box, "check", 12, "onAccent", { Name = "Tick", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5) })
+    local tickScale = tick and create("UIScale", { Name = "macOSScale", Scale = 1, Parent = tick })
     title.Position = UDim2.new(0, 26, 0, title.Position.Y.Offset)
     title.Size = UDim2.new(1, -26 - (cfg.Help and 16 or 0), 0, title.Size.Y.Offset)
     if desc then desc.Position = UDim2.fromOffset(26, 23) desc.Size = UDim2.new(1, -26, 0, 14) end
@@ -23,10 +25,16 @@ return function(card, cfg)
     local hovered = false
     local function render(animate)
         local on = element.Value
-        local duration = animate and 0.12 or nil
+        local duration = animate and 0.16 or nil
         Theme.tweenTo(box, "BackgroundColor3", on and "accent" or (hovered and "hover" or "input"), duration)
         Theme.tweenTo(edge, "Color", on and "accent" or "buttonEdge", duration)
-        if tick then tick.Visible = on end
+        if tick then
+            tick.Visible = on
+            if on and animate and tickScale then
+                tickScale.Scale = 0.5
+                Util.tween(tickScale, 0.18, { Scale = 1 }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            end
+        end
     end
     function element:Set(value, silent)
         value = value == true

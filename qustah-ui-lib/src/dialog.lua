@@ -21,12 +21,16 @@ return function(Window)
             Name = "Panel", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(0, 330, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y, BorderSizePixel = 0, ZIndex = 201, Active = true, Parent = overlay,
         })
+        local panelScale = create("UIScale", { Name = "macOSDialogScale", Scale = 0.92, Parent = panel })
         create("UISizeConstraint", { MaxSize = Vector2.new(330, 400), MinSize = Vector2.new(200, 0), Parent = panel })
         Theme.bind(panel, "BackgroundColor3", "card")
         corner(panel, 8)
         Theme.bind(stroke(panel), "Color", "line")
         Util.padding(panel, 16, 16, 12, 12)
         Util.list(panel, 8)
+        -- macOS sheet spring in
+        Util.tween(panelScale, 0.22, { Scale = 1 }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        Util.tween(overlay, 0.18, { BackgroundTransparency = 0.45 }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
         -- long titles wrap onto more lines instead of being cut
         local title = label(panel, tostring(cfg.Title or ""), 13, {
             Name = "Title", Size = UDim2.new(1, 0, 0, 20), AutomaticSize = Enum.AutomaticSize.Y, TextWrapped = true,
@@ -51,11 +55,17 @@ return function(Window)
         Util.list(row, 8, Enum.FillDirection.Horizontal, Enum.HorizontalAlignment.Right, Enum.VerticalAlignment.Bottom)
 
         local dialog = { Frame = overlay }
+        local isClosing = false
         function dialog:Close(result)
-            if not overlay.Parent then return end
+            if not overlay.Parent or isClosing then return end
+            isClosing = true
             if window._dialog == dialog then window._dialog = nil end
-            overlay:Destroy()
-            if result == nil then window:_safe("Dialog", cfg.OnCancel) end
+            Util.tween(panelScale, 0.14, { Scale = 0.94 }, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+            Util.tween(overlay, 0.14, { BackgroundTransparency = 1 }, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+            task.delay(0.14, function()
+                overlay:Destroy()
+                if result == nil then window:_safe("Dialog", cfg.OnCancel) end
+            end)
         end
         local buttons = cfg.Buttons or { { Title = "OK" } }
         for index, spec in ipairs(buttons) do
@@ -67,6 +77,7 @@ return function(Window)
             })
             Util.padding(button, 14, 14, 0, 0)
             corner(button, 6)
+            Util.attachPressEffect(button, true, 0.95)
             local outline = stroke(button)
             if style == "Danger" then
                 Theme.bind(button, "BackgroundColor3", "dangerDeep")

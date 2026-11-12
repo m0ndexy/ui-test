@@ -72,6 +72,8 @@ function Notify.show(Lib, cfg)
         Name = "Toast", Size = UDim2.new(1, 0, 0, height), BorderSizePixel = 0, ClipsDescendants = true,
         LayoutOrder = Lib._toastOrder, Parent = holder,
     })
+    local toastScale = create("UIScale", { Name = "macOSToastScale", Scale = 0.88, Parent = toast })
+    Util.tween(toastScale, 0.24, { Scale = 1 }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     Theme.bind(toast, "BackgroundColor3", "card")
     corner(toast, 8)
     Theme.bind(stroke(toast), "Color", "line")
@@ -111,6 +113,7 @@ function Notify.show(Lib, cfg)
         closed = true
         if timer then timer:Disconnect() timer = nil end
         for index, item in ipairs(Lib._openToasts or {}) do if item == entry then table.remove(Lib._openToasts, index) break end end
+        Util.tween(toastScale, 0.2, { Scale = 0.88 }, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
         Util.fadeTree(toast, 0.25, 1)
         task.delay(0.27, function() if toast.Parent then toast:Destroy() end end)
     end

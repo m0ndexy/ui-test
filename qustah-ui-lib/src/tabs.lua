@@ -272,7 +272,12 @@ function Page:Select()
     tab.current = self
     for _, page in ipairs(tab.Pages) do
         local selected = page == self
-        page.frame.Visible = selected and tab.window.current == tab
+        local show = selected and tab.window.current == tab
+        page.frame.Visible = show
+        if show and page.content then
+            page.content.Position = UDim2.fromOffset(16, 10)
+            Util.tween(page.content, 0.22, { Position = UDim2.fromOffset(16, 2) }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        end
         page.underline.Visible = selected
         -- (in the title row: like the header tabs, heading / muted)
         local header = tab.window.pagesInHeader and tab.window.current == tab
@@ -321,6 +326,7 @@ function Tab.new(window, cfg)
         self.iconProperty = "TextColor3"
     end
     self.button, self.icon, self.hovered = button, icon, false
+    Util.attachPressEffect(button, true, 0.92)
     self:_render(false)
     button.MouseEnter:Connect(function()
         self.hovered = true
@@ -340,12 +346,12 @@ function Tab.new(window, cfg)
     return self
 end
 
--- Dock button look: selected = filled + accent icon, hover = half fill + bright icon.
+-- Dock button look: selected = filled + accent icon (or dockGlider behind it), hover = half fill + bright icon.
 function Tab:_render(animate)
     local selected = self.window.current == self
-    local duration = animate and 0.14 or nil
-    local transparency = selected and 0 or (self.hovered and 0.6 or 1)
-    if duration then tween(self.button, duration, { BackgroundTransparency = transparency }) else self.button.BackgroundTransparency = transparency end
+    local duration = animate and 0.16 or nil
+    local transparency = (selected and self.window.dockGlider) and 1 or (selected and 0 or (self.hovered and 0.65 or 1))
+    if duration then tween(self.button, duration, { BackgroundTransparency = transparency }, Enum.EasingStyle.Quart) else self.button.BackgroundTransparency = transparency end
     Theme.tweenTo(self.icon, self.iconProperty, selected and "accent" or (self.hovered and "heading" or "icon"), duration)
 end
 
@@ -444,6 +450,11 @@ function Tab:Select()
     local window = self.window
     if self._build then self:Build() end
     window.current = self
+    -- macOS sliding dock capsule glider
+    if window.dockGlider then
+        window.dockGlider.Visible = not self.Hidden
+        Util.tween(window.dockGlider, 0.24, { Position = self.button.Position }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    end
     for _, tab in ipairs(window.Tabs) do
         tab.strip.Visible = tab == self and #tab.Pages > 1
         for _, page in ipairs(tab.Pages) do page.frame.Visible = false end

@@ -110,6 +110,65 @@ function Util.tween(object, duration, props, style, direction)
     return tween
 end
 
+-- macOS Core Animation System
+Util.macOS = {
+    SpringFast = { duration = 0.22, style = Enum.EasingStyle.Quart, direction = Enum.EasingDirection.Out },
+    SpringSnappy = { duration = 0.28, style = Enum.EasingStyle.Back, direction = Enum.EasingDirection.Out },
+    SpringSmooth = { duration = 0.35, style = Enum.EasingStyle.Quart, direction = Enum.EasingDirection.Out },
+}
+
+function Util.macOSTween(object, duration, props, style, direction)
+    return Util.tween(object, duration or 0.24, props, style or Enum.EasingStyle.Quart, direction or Enum.EasingDirection.Out)
+end
+
+function Util.attachPressEffect(button, allowHover, targetPressScale)
+    targetPressScale = targetPressScale or 0.96
+    local scale = button:FindFirstChild("macOSScale")
+    if not scale then
+        scale = Util.create("UIScale", { Name = "macOSScale", Scale = 1, Parent = button })
+    end
+    local isPressed, isHovered = false, false
+    local function updateScale()
+        local target = 1
+        local duration = 0.22
+        local style = Enum.EasingStyle.Back
+        if isPressed then
+            target = targetPressScale
+            duration = 0.08
+            style = Enum.EasingStyle.Quad
+        elseif isHovered and allowHover then
+            target = 1.015
+            duration = 0.16
+            style = Enum.EasingStyle.Quart
+        end
+        Util.tween(scale, duration, { Scale = target }, style, Enum.EasingDirection.Out)
+    end
+    button.InputBegan:Connect(function(input)
+        if Util.isPress(input) then
+            isPressed = true
+            updateScale()
+        end
+    end)
+    button.InputEnded:Connect(function(input)
+        if Util.isPress(input) then
+            isPressed = false
+            updateScale()
+        end
+    end)
+    if allowHover then
+        button.MouseEnter:Connect(function()
+            isHovered = true
+            updateScale()
+        end)
+        button.MouseLeave:Connect(function()
+            isHovered = false
+            isPressed = false
+            updateScale()
+        end)
+    end
+    return scale
+end
+
 -- Fades a small piece of UI (toast, pill, key screen) by tweening each part's own transparency, so nothing is
 -- drawn through a CanvasGroup texture (sharp text and icons) and it can stay inside a list layout. Each part's
 -- resting transparency is remembered the first time. fromHidden: start everything invisible (a new toast).

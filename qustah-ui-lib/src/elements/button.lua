@@ -78,6 +78,7 @@ return function(card, cfg)
         TextSize = textSize, Font = Enum.Font.Gotham, AutoButtonColor = false, Parent = row,
     })
     corner(button, 6)
+    Util.attachPressEffect(button, true, 0.96)
     local outline = stroke(button)
     local desc
     if cfg.Desc then

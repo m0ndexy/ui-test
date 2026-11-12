@@ -9,7 +9,7 @@ import json, pathlib, re, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent
 SRC, DIST = ROOT / "src", ROOT / "dist"
-VERSION = re.search(r'Version = "([^"]+)"', (SRC / "init.lua").read_text()).group(1)
+VERSION = re.search(r'Version = "([^"]+)"', (SRC / "init.lua").read_text(encoding="utf-8")).group(1)
 
 modules = sorted(p for p in SRC.rglob("*.lua"))
 names = {p: p.relative_to(SRC).with_suffix("").as_posix() for p in modules}
@@ -17,7 +17,7 @@ names = {p: p.relative_to(SRC).with_suffix("").as_posix() for p in modules}
 # every require("x") must point at a module
 missing = []
 for path in modules:
-    for name in re.findall(r'require\("([^"]+)"\)', path.read_text()):
+    for name in re.findall(r'require\("([^"]+)"\)', path.read_text(encoding="utf-8")):
         if name not in names.values():
             missing.append(f"{names[path]} requires unknown module '{name}'")
 if missing:
@@ -41,16 +41,18 @@ out = [
 ]
 for path in modules:
     out.append(f"__modules[{json.dumps(names[path])}] = function()")
-    out.append(path.read_text().rstrip("\n"))
+    out.append(path.read_text(encoding="utf-8").rstrip("\n"))
     out.append("end")
     out.append("")
 out.append('return require("init")')
 
 DIST.mkdir(exist_ok=True)
 target = DIST / "qustah-ui-lib.lua"
-target.write_text("\n".join(out) + "\n")
+target.write_text("\n".join(out) + "\n", encoding="utf-8")
 print(f"built {target.relative_to(ROOT)}: {len(modules)} modules, {target.stat().st_size // 1024} KB, v{VERSION}")
 
+RE_COMMENT = re.compile(r"--\[(=*)\[")
+RE_STRING = re.compile(r"\[(=*)\[")
 
 def minify(source):
     """Removes comments, indentation and blank lines. Strings (quoted and [[long]]) are copied untouched;
@@ -64,7 +66,7 @@ def minify(source):
             continue
         line_start = False
         if source.startswith("--", i):
-            m = re.match(r"--\[(=*)\[", source[i:])
+            m = RE_COMMENT.match(source, i)
             if m:
                 end = source.find("]" + m.group(1) + "]", i)
                 i = n if end < 0 else end + len(m.group(1)) + 2
@@ -72,7 +74,7 @@ def minify(source):
                 end = source.find("\n", i)
                 i = n if end < 0 else end
             continue
-        m = re.match(r"\[(=*)\[", source[i:])
+        m = RE_STRING.match(source, i)
         if m:
             end = source.find("]" + m.group(1) + "]", i)
             end = n if end < 0 else end + len(m.group(1)) + 2
@@ -112,7 +114,7 @@ def minify(source):
 
 minified = DIST / "qustah-ui-lib.min.lua"
 body = "\n".join(out[2:]) + "\n"
-minified.write_text(f"-- qustah-ui-lib v{VERSION} (minified build of dist/qustah-ui-lib.lua)\n" + minify(body))
+minified.write_text(f"-- qustah-ui-lib v{VERSION} (minified build of dist/qustah-ui-lib.lua)\n" + minify(body), encoding="utf-8")
 print(f"built {minified.relative_to(ROOT)}: {minified.stat().st_size // 1024} KB")
 
 
@@ -125,7 +127,7 @@ for path in modules:
     name = names[path]
     if name in dropped:
         continue
-    source = path.read_text().rstrip("\n")
+    source = path.read_text(encoding="utf-8").rstrip("\n")
     if name == "card":
         for element in SLIM_DROP:
             source, count = re.subn(
@@ -141,5 +143,5 @@ for name in dropped:
     if re.search(r'require\("' + name + r'"\)', slim_body):
         sys.exit(f"slim build: something still requires {name}")
 slim_target = DIST / "qustah-ui-lib.slim.min.lua"
-slim_target.write_text(f"-- qustah-ui-lib v{VERSION} slim (no {', '.join(SLIM_DROP)}; minified)\n" + minify(slim_body))
+slim_target.write_text(f"-- qustah-ui-lib v{VERSION} slim (no {', '.join(SLIM_DROP)}; minified)\n" + minify(slim_body), encoding="utf-8")
 print(f"built {slim_target.relative_to(ROOT)}: {slim_target.stat().st_size // 1024} KB")

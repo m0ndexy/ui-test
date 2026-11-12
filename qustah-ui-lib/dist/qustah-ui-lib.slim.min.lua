@@ -1196,12 +1196,15 @@ local panel=create("Frame",{
 Name="Panel",AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.new(0,330,0,0),
 AutomaticSize=Enum.AutomaticSize.Y,BorderSizePixel=0,ZIndex=201,Active=true,Parent=overlay,
 })
+local panelScale=create("UIScale",{Name="macOSDialogScale",Scale=0.92,Parent=panel})
 create("UISizeConstraint",{MaxSize=Vector2.new(330,400),MinSize=Vector2.new(200,0),Parent=panel})
 Theme.bind(panel,"BackgroundColor3","card")
 corner(panel,8)
 Theme.bind(stroke(panel),"Color","line")
 Util.padding(panel,16,16,12,12)
 Util.list(panel,8)
+Util.tween(panelScale,0.22,{Scale=1},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+Util.tween(overlay,0.18,{BackgroundTransparency=0.45},Enum.EasingStyle.Quart,Enum.EasingDirection.Out)
 local title=label(panel,tostring(cfg.Title or""),13,{
 Name="Title",Size=UDim2.new(1,0,0,20),AutomaticSize=Enum.AutomaticSize.Y,TextWrapped=true,
 TextTruncate=Enum.TextTruncate.None,Font=Enum.Font.GothamMedium,ZIndex=202,LayoutOrder=1,
@@ -1222,11 +1225,17 @@ end
 local row=create("Frame",{Name="Buttons",BackgroundTransparency=1,Size=UDim2.new(1,0,0,34),LayoutOrder=3,ZIndex=202,Parent=panel})
 Util.list(row,8,Enum.FillDirection.Horizontal,Enum.HorizontalAlignment.Right,Enum.VerticalAlignment.Bottom)
 local dialog={Frame=overlay}
+local isClosing=false
 function dialog:Close(result)
-if not overlay.Parent then return end
+if not overlay.Parent or isClosing then return end
+isClosing=true
 if window._dialog==dialog then window._dialog=nil end
+Util.tween(panelScale,0.14,{Scale=0.94},Enum.EasingStyle.Quart,Enum.EasingDirection.In)
+Util.tween(overlay,0.14,{BackgroundTransparency=1},Enum.EasingStyle.Quart,Enum.EasingDirection.In)
+task.delay(0.14,function()
 overlay:Destroy()
 if result==nil then window:_safe("Dialog",cfg.OnCancel)end
+end)
 end
 local buttons=cfg.Buttons or{{Title="OK"}}
 for index,spec in ipairs(buttons)do
@@ -1238,6 +1247,7 @@ LayoutOrder=index,ZIndex=203,Parent=row,
 })
 Util.padding(button,14,14,0,0)
 corner(button,6)
+Util.attachPressEffect(button,true,0.95)
 local outline=stroke(button)
 if style=="Danger"then
 Theme.bind(button,"BackgroundColor3","dangerDeep")
@@ -1848,6 +1858,7 @@ Name="Button",Size=UDim2.new(1,0,0,buttonHeight),BorderSizePixel=0,Text="",
 TextSize=textSize,Font=Enum.Font.Gotham,AutoButtonColor=false,Parent=row,
 })
 corner(button,6)
+Util.attachPressEffect(button,true,0.96)
 local outline=stroke(button)
 local desc
 if cfg.Desc then
@@ -2436,7 +2447,9 @@ local row,title,desc=Base.row(card,cfg,cfg.Desc and 40 or 28,{button=true,noIcon
 local box=create("Frame",{Name="Box",AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,0,0,cfg.Desc and 12 or 14),Size=UDim2.fromOffset(16,16),BorderSizePixel=0,Parent=row})
 corner(box,4)
 local edge=stroke(box)
+Util.attachPressEffect(box,false,0.92)
 local tick=Icons.themed(box,"check",12,"onAccent",{Name="Tick",AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5)})
+local tickScale=tick and create("UIScale",{Name="macOSScale",Scale=1,Parent=tick})
 title.Position=UDim2.new(0,26,0,title.Position.Y.Offset)
 title.Size=UDim2.new(1,-26-(cfg.Help and 16 or 0),0,title.Size.Y.Offset)
 if desc then desc.Position=UDim2.fromOffset(26,23)desc.Size=UDim2.new(1,-26,0,14)end
@@ -2445,10 +2458,16 @@ element.Value=cfg.Default==true
 local hovered=false
 local function render(animate)
 local on=element.Value
-local duration=animate and 0.12 or nil
+local duration=animate and 0.16 or nil
 Theme.tweenTo(box,"BackgroundColor3",on and"accent"or(hovered and"hover"or"input"),duration)
 Theme.tweenTo(edge,"Color",on and"accent"or"buttonEdge",duration)
-if tick then tick.Visible=on end
+if tick then
+tick.Visible=on
+if on and animate and tickScale then
+tickScale.Scale=0.5
+Util.tween(tickScale,0.18,{Scale=1},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+end
+end
 end
 function element:Set(value,silent)
 value=value==true
@@ -5096,6 +5115,7 @@ corner(fill,1)
 local knob=create("Frame",{Name="Knob",AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0,0.5),Size=UDim2.fromOffset(10,10),BorderSizePixel=0,ZIndex=2,Parent=track})
 Theme.bind(knob,"BackgroundColor3","accent")
 corner(knob,5)
+local knobScale=create("UIScale",{Name="macOSKnobScale",Scale=1,Parent=knob})
 local reach=Util.isTouch()and 8 or 0
 local hit=create("TextButton",{Name="Hit",Text="",AutoButtonColor=false,BackgroundTransparency=1,Position=UDim2.new(0,inset-6,0,top-reach),Size=UDim2.new(1,12-inset*2,0,18+reach*2),ZIndex=3,Parent=row})
 local bubble=create("TextLabel",{
@@ -5105,6 +5125,7 @@ BorderSizePixel=0,Text="",TextSize=9,Font=Enum.Font.GothamMedium,Visible=false,Z
 Theme.bind(bubble,"BackgroundColor3","selected")
 Theme.bind(bubble,"TextColor3","heading")
 corner(bubble,5)
+local bubbleScale=create("UIScale",{Name="macOSBubbleScale",Scale=1,Parent=bubble})
 Util.padding(bubble,7,7,0,0)
 Theme.bind(Util.stroke(bubble),"Color","buttonEdge")
 local element=Base.element(card,"Slider",cfg,row,title,desc)
@@ -5145,12 +5166,23 @@ element:Set(min+math.clamp((point.X-Util.screenPos(track).X-inset)/math.max(1,wi
 end
 hit.InputBegan:Connect(function(input)
 if not Util.isPress(input)or element.Locked then return end
-bubble.Visible=cfg.Bubble~=false
+if cfg.Bubble~=false then
+bubble.Visible=true
+bubbleScale.Scale=0.75
+Util.tween(bubbleScale,0.18,{Scale=1},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+end
+Util.tween(knobScale,0.16,{Scale=1.25},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 dragging,movedWhileDragging=true,false
 element.Dragging=true
 fromPoint(Util.pointer(input))
 window:_beginDrag(input,fromPoint,function()
-bubble.Visible=false
+Util.tween(knobScale,0.16,{Scale=1},Enum.EasingStyle.Quart,Enum.EasingDirection.Out)
+if bubble.Visible then
+Util.tween(bubbleScale,0.12,{Scale=0.75},Enum.EasingStyle.Quad,Enum.EasingDirection.In)
+task.delay(0.12,function()
+if not dragging then bubble.Visible=false end
+end)
+end
 dragging=false
 element.Dragging=false
 if movedWhileDragging then element:_fire(element.Value,false,false)end
@@ -6140,6 +6172,7 @@ Name="Switch",Text="",AutoButtonColor=false,BorderSizePixel=0,AnchorPoint=Vector
 Position=UDim2.new(1,0,0.5,0),Size=UDim2.fromOffset(34,18),Parent=row,
 })
 corner(switch,9)
+Util.attachPressEffect(switch,false,0.94)
 local rim=Util.stroke(switch,nil,0.18)
 local knob=create("Frame",{Name="Knob",Position=UDim2.fromOffset(2,2),Size=UDim2.fromOffset(14,14),BorderSizePixel=0,Parent=switch})
 corner(knob,7)
@@ -6170,13 +6203,23 @@ local element=Base.element(card,"Toggle",cfg,row,title,desc)
 element.Value=cfg.Default==true
 local function render(animate)
 local on=element.Value
-local duration=animate and 0.15 or nil
+local duration=animate and 0.2 or nil
 Theme.tweenTo(switch,"BackgroundColor3",on and"toggleOn"or"buttonEdge",duration)
 Theme.bind(knob,"BackgroundColor3","knob")
 Theme.tweenTo(rim,"Color",on and"accent"or"line",duration)
 rim.Transparency=on and 0.6 or 0.18
-local position=UDim2.fromOffset(on and 18 or 2,2)
-if animate then Util.tween(knob,0.15,{Position=position})else knob.Position=position end
+local targetX=on and 18 or 2
+local targetPos=UDim2.fromOffset(targetX,2)
+if animate then
+Util.tween(knob,0.1,{Size=UDim2.fromOffset(18,14)},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+Util.tween(knob,0.2,{Position=targetPos},Enum.EasingStyle.Quart,Enum.EasingDirection.Out)
+task.delay(0.1,function()
+Util.tween(knob,0.1,{Size=UDim2.fromOffset(14,14)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+end)
+else
+knob.Position=targetPos
+knob.Size=UDim2.fromOffset(14,14)
+end
 end
 function element:Set(value,silent)
 value=value==true
@@ -8276,6 +8319,8 @@ local toast=create("Frame",{
 Name="Toast",Size=UDim2.new(1,0,0,height),BorderSizePixel=0,ClipsDescendants=true,
 LayoutOrder=Lib._toastOrder,Parent=holder,
 })
+local toastScale=create("UIScale",{Name="macOSToastScale",Scale=0.88,Parent=toast})
+Util.tween(toastScale,0.24,{Scale=1},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 Theme.bind(toast,"BackgroundColor3","card")
 corner(toast,8)
 Theme.bind(stroke(toast),"Color","line")
@@ -8312,6 +8357,7 @@ if closed or not toast.Parent then return end
 closed=true
 if timer then timer:Disconnect()timer=nil end
 for index,item in ipairs(Lib._openToasts or{})do if item==entry then table.remove(Lib._openToasts,index)break end end
+Util.tween(toastScale,0.2,{Scale=0.88},Enum.EasingStyle.Quart,Enum.EasingDirection.In)
 Util.fadeTree(toast,0.25,1)
 task.delay(0.27,function()if toast.Parent then toast:Destroy()end end)
 end
@@ -9874,7 +9920,12 @@ local tab=self.tab
 tab.current=self
 for _,page in ipairs(tab.Pages)do
 local selected=page==self
-page.frame.Visible=selected and tab.window.current==tab
+local show=selected and tab.window.current==tab
+page.frame.Visible=show
+if show and page.content then
+page.content.Position=UDim2.fromOffset(16,10)
+Util.tween(page.content,0.22,{Position=UDim2.fromOffset(16,2)},Enum.EasingStyle.Quart,Enum.EasingDirection.Out)
+end
 page.underline.Visible=selected
 local header=tab.window.pagesInHeader and tab.window.current==tab
 Theme.tweenTo(page.button,"TextColor3",selected and(header and"heading"or"accent")or(header and"muted"or"text"),0.12)
@@ -9916,6 +9967,7 @@ Name="Icon",Size=UDim2.fromScale(1,1),TextXAlignment=Enum.TextXAlignment.Center,
 self.iconProperty="TextColor3"
 end
 self.button,self.icon,self.hovered=button,icon,false
+Util.attachPressEffect(button,true,0.92)
 self:_render(false)
 button.MouseEnter:Connect(function()
 self.hovered=true
@@ -9936,9 +9988,9 @@ return self
 end
 function Tab:_render(animate)
 local selected=self.window.current==self
-local duration=animate and 0.14 or nil
-local transparency=selected and 0 or(self.hovered and 0.6 or 1)
-if duration then tween(self.button,duration,{BackgroundTransparency=transparency})else self.button.BackgroundTransparency=transparency end
+local duration=animate and 0.16 or nil
+local transparency=(selected and self.window.dockGlider)and 1 or(selected and 0 or(self.hovered and 0.65 or 1))
+if duration then tween(self.button,duration,{BackgroundTransparency=transparency},Enum.EasingStyle.Quart)else self.button.BackgroundTransparency=transparency end
 Theme.tweenTo(self.icon,self.iconProperty,selected and"accent"or(self.hovered and"heading"or"icon"),duration)
 end
 function Tab:SetActive(on,color)
@@ -10020,6 +10072,10 @@ function Tab:Select()
 local window=self.window
 if self._build then self:Build()end
 window.current=self
+if window.dockGlider then
+window.dockGlider.Visible=not self.Hidden
+Util.tween(window.dockGlider,0.24,{Position=self.button.Position},Enum.EasingStyle.Quart,Enum.EasingDirection.Out)
+end
 for _,tab in ipairs(window.Tabs)do
 tab.strip.Visible=tab==self and#tab.Pages>1
 for _,page in ipairs(tab.Pages)do page.frame.Visible=false end
@@ -10728,6 +10784,61 @@ TweenInfo.new(duration,style or Enum.EasingStyle.Quad,direction or Enum.EasingDi
 tween:Play()
 return tween
 end
+Util.macOS={
+SpringFast={duration=0.22,style=Enum.EasingStyle.Quart,direction=Enum.EasingDirection.Out},
+SpringSnappy={duration=0.28,style=Enum.EasingStyle.Back,direction=Enum.EasingDirection.Out},
+SpringSmooth={duration=0.35,style=Enum.EasingStyle.Quart,direction=Enum.EasingDirection.Out},
+}
+function Util.macOSTween(object,duration,props,style,direction)
+return Util.tween(object,duration or 0.24,props,style or Enum.EasingStyle.Quart,direction or Enum.EasingDirection.Out)
+end
+function Util.attachPressEffect(button,allowHover,targetPressScale)
+targetPressScale=targetPressScale or 0.96
+local scale=button:FindFirstChild("macOSScale")
+if not scale then
+scale=Util.create("UIScale",{Name="macOSScale",Scale=1,Parent=button})
+end
+local isPressed,isHovered=false,false
+local function updateScale()
+local target=1
+local duration=0.22
+local style=Enum.EasingStyle.Back
+if isPressed then
+target=targetPressScale
+duration=0.08
+style=Enum.EasingStyle.Quad
+elseif isHovered and allowHover then
+target=1.015
+duration=0.16
+style=Enum.EasingStyle.Quart
+end
+Util.tween(scale,duration,{Scale=target},style,Enum.EasingDirection.Out)
+end
+button.InputBegan:Connect(function(input)
+if Util.isPress(input)then
+isPressed=true
+updateScale()
+end
+end)
+button.InputEnded:Connect(function(input)
+if Util.isPress(input)then
+isPressed=false
+updateScale()
+end
+end)
+if allowHover then
+button.MouseEnter:Connect(function()
+isHovered=true
+updateScale()
+end)
+button.MouseLeave:Connect(function()
+isHovered=false
+isPressed=false
+updateScale()
+end)
+end
+return scale
+end
 local FADE_PROPS={
 {"GuiObject","BackgroundTransparency"},{"TextLabel","TextTransparency"},{"TextButton","TextTransparency"},
 {"TextBox","TextTransparency"},{"ImageLabel","ImageTransparency"},{"ImageButton","ImageTransparency"},
@@ -11262,12 +11373,13 @@ corner(bar,1)
 Theme.bind(bar,"BackgroundColor3","muted")
 bars[#bars+1]=bar
 end
+Util.attachPressEffect(button,true,0.92)
 button.MouseEnter:Connect(function()
-tween(button,0.12,{BackgroundTransparency=0,BackgroundColor3=Theme.get(cross and"dangerDeep"or"input")})
+tween(button,0.12,{BackgroundTransparency=0,BackgroundColor3=Theme.get(cross and"dangerDeep"or"input")},Enum.EasingStyle.Quart)
 for _,bar in ipairs(bars)do Theme.tweenTo(bar,"BackgroundColor3",cross and"danger"or"heading",0.12)end
 end)
 button.MouseLeave:Connect(function()
-tween(button,0.12,{BackgroundTransparency=1})
+tween(button,0.12,{BackgroundTransparency=1},Enum.EasingStyle.Quart)
 for _,bar in ipairs(bars)do Theme.tweenTo(bar,"BackgroundColor3","muted",0.12)end
 end)
 return button
@@ -11367,6 +11479,15 @@ corner(dock,20)
 Theme.bind(stroke(dock),"Color","line")
 self.dock=dock
 self.dockScale=create("UIScale",{Scale=1,Parent=dock})
+local glider=create("Frame",{
+Name="DockGlider",Size=UDim2.fromOffset(30,30),Position=UDim2.fromOffset(5,DOCK_TOP),
+BorderSizePixel=0,BackgroundTransparency=0,ZIndex=41,Visible=false,Parent=dock,
+})
+Theme.bind(glider,"BackgroundColor3","accentDeep")
+corner(glider,15)
+local gliderStroke=Util.stroke(glider,nil,0.45)
+Theme.bind(gliderStroke,"Color","accent")
+self.dockGlider=glider
 local dockGrip=create("TextButton",{Name="DragHandle",Text="",AutoButtonColor=false,BackgroundTransparency=1,Position=UDim2.fromOffset(5,6),Size=UDim2.fromOffset(30,28),ZIndex=42,Parent=dock})
 local gripBars={}
 for _,lineY in ipairs({9,13,17})do
@@ -11661,6 +11782,10 @@ self:_dockSpot(tab.button,cursor,5)
 cursor=cursor+DOCK_STEP
 end
 self.dockHeight=cursor+8
+if self.current and self.current.button and self.dockGlider then
+self.dockGlider.Position=self.current.button.Position
+self.dockGlider.Visible=not self.current.Hidden
+end
 end
 function Window:_layoutBody()
 local tab=self.current
@@ -11880,13 +12005,35 @@ self.visible=visible
 self:_closePopup()
 if not visible and self._dialog then self._dialog:Close()end
 self:_hideTip()
+local s=self.uiScale or 1
 if visible then
 self.main.Visible=true
 self:_layout()
+if self.scale then
+self.scale.Scale=s*0.93
+Util.tween(self.scale,0.24,{Scale=s},Enum.EasingStyle.Quart,Enum.EasingDirection.Out)
+end
+if self.dock and self.dock.Visible and self.dockScale then
+self.dockScale.Scale=s*0.93
+Util.tween(self.dockScale,0.24,{Scale=s},Enum.EasingStyle.Quart,Enum.EasingDirection.Out)
+end
 else
 self._drag=nil
+if self.scale and self.main.Visible then
+Util.tween(self.scale,0.14,{Scale=s*0.96},Enum.EasingStyle.Quart,Enum.EasingDirection.In)
+if self.dockScale then
+Util.tween(self.dockScale,0.14,{Scale=s*0.96},Enum.EasingStyle.Quart,Enum.EasingDirection.In)
+end
+task.delay(0.13,function()
+if not self.visible then
 self.main.Visible=false
 self.dock.Visible=false
+end
+end)
+else
+self.main.Visible=false
+self.dock.Visible=false
+end
 end
 end
 function Window:Toggle()self:SetVisible(not self.visible)end

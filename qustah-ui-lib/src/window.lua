@@ -161,12 +161,13 @@ function Window:_build()
             Theme.bind(bar, "BackgroundColor3", "muted")
             bars[#bars + 1] = bar
         end
+        Util.attachPressEffect(button, true, 0.92)
         button.MouseEnter:Connect(function()
-            tween(button, 0.12, { BackgroundTransparency = 0, BackgroundColor3 = Theme.get(cross and "dangerDeep" or "input") })
+            tween(button, 0.12, { BackgroundTransparency = 0, BackgroundColor3 = Theme.get(cross and "dangerDeep" or "input") }, Enum.EasingStyle.Quart)
             for _, bar in ipairs(bars) do Theme.tweenTo(bar, "BackgroundColor3", cross and "danger" or "heading", 0.12) end
         end)
         button.MouseLeave:Connect(function()
-            tween(button, 0.12, { BackgroundTransparency = 1 })
+            tween(button, 0.12, { BackgroundTransparency = 1 }, Enum.EasingStyle.Quart)
             for _, bar in ipairs(bars) do Theme.tweenTo(bar, "BackgroundColor3", "muted", 0.12) end
         end)
         return button
@@ -281,6 +282,17 @@ function Window:_build()
     Theme.bind(stroke(dock), "Color", "line")
     self.dock = dock
     self.dockScale = create("UIScale", { Scale = 1, Parent = dock })
+
+    -- macOS sliding dock capsule glider
+    local glider = create("Frame", {
+        Name = "DockGlider", Size = UDim2.fromOffset(30, 30), Position = UDim2.fromOffset(5, DOCK_TOP),
+        BorderSizePixel = 0, BackgroundTransparency = 0, ZIndex = 41, Visible = false, Parent = dock,
+    })
+    Theme.bind(glider, "BackgroundColor3", "accentDeep")
+    corner(glider, 15)
+    local gliderStroke = Util.stroke(glider, nil, 0.45)
+    Theme.bind(gliderStroke, "Color", "accent")
+    self.dockGlider = glider
     -- drag handle (three lines) at the top of the dock moves the window like the header
     local dockGrip = create("TextButton", { Name = "DragHandle", Text = "", AutoButtonColor = false, BackgroundTransparency = 1, Position = UDim2.fromOffset(5, 6), Size = UDim2.fromOffset(30, 28), ZIndex = 42, Parent = dock })
     local gripBars = {}
@@ -610,6 +622,10 @@ function Window:_layoutDock()
         cursor = cursor + DOCK_STEP
     end
     self.dockHeight = cursor + 8
+    if self.current and self.current.button and self.dockGlider then
+        self.dockGlider.Position = self.current.button.Position
+        self.dockGlider.Visible = not self.current.Hidden
+    end
 end
 
 -- Page area: below the strip (if the open tab has pages) and above the key hint bar (if there are hints).
@@ -863,15 +879,37 @@ function Window:SetVisible(visible)
     self:_closePopup()
     if not visible and self._dialog then self._dialog:Close() end
     self:_hideTip()
-    -- (shown and hidden at once: a fade put the whole menu - thousands of objects - into a CanvasGroup and back on
-    -- every toggle, a visible hitch in game)
+    local s = self.uiScale or 1
     if visible then
         self.main.Visible = true
         self:_layout() -- (the dock shows again here, unless folded or without tabs)
+        -- macOS Spring Open (GPU accelerated through UIScale)
+        if self.scale then
+            self.scale.Scale = s * 0.93
+            Util.tween(self.scale, 0.24, { Scale = s }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        end
+        if self.dock and self.dock.Visible and self.dockScale then
+            self.dockScale.Scale = s * 0.93
+            Util.tween(self.dockScale, 0.24, { Scale = s }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        end
     else
         self._drag = nil
-        self.main.Visible = false
-        self.dock.Visible = false
+        -- macOS Snappy Close
+        if self.scale and self.main.Visible then
+            Util.tween(self.scale, 0.14, { Scale = s * 0.96 }, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+            if self.dockScale then
+                Util.tween(self.dockScale, 0.14, { Scale = s * 0.96 }, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+            end
+            task.delay(0.13, function()
+                if not self.visible then
+                    self.main.Visible = false
+                    self.dock.Visible = false
+                end
+            end)
+        else
+            self.main.Visible = false
+            self.dock.Visible = false
+        end
     end
 end
 function Window:Toggle() self:SetVisible(not self.visible) end
