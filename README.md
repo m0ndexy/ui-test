@@ -1,102 +1,193 @@
 <div align="center">
 
-![Qustah UI](qustah-ui-lib/assets/banner-live.png)
+# LumeUI
 
-**A clean, fast UI library for Roblox scripts.**<br>
-Dock navigation, real profiles, 20 themes and 18k icons, loaded with one line.
+**Dark, compact, modern desktop-tool UI library for Roblox.**<br>
+Layered near-black surfaces, periwinkle accents, and precision micro-interactions.
 
 <br>
 
-![version](https://img.shields.io/badge/version-1.9.27-2b2b2f?style=flat-square&labelColor=18181a)
-![elements](https://img.shields.io/badge/elements-50-2b2b2f?style=flat-square&labelColor=18181a)
-![size](https://img.shields.io/badge/min-467_KB-2b2b2f?style=flat-square&labelColor=18181a)
-![license](https://img.shields.io/badge/license-MIT-2b2b2f?style=flat-square&labelColor=18181a)
+![version](https://img.shields.io/badge/version-1.0.0-7C7CFF?style=flat-square&labelColor=141416)
+![style](https://img.shields.io/badge/style-Evenesce_Dark-7C7CFF?style=flat-square&labelColor=141416)
+![license](https://img.shields.io/badge/license-MIT-7C7CFF?style=flat-square&labelColor=141416)
 
-[Install](#install) · [Quick start](#quick-start) · [Showcase](#showcase) · [Documentation](#documentation) · [Example](qustah-ui-lib/example.lua) · [License](LICENSE)
+[Quick Start](#quick-start) · [Design Tokens](#design-tokens) · [Components](#components) · [Example](Example.luau) · [Showcase](Showcase.luau)
 
 </div>
 
-## Features
+---
 
-- **Finished look.** Dock, two-column cards, footer bar, key hints and smooth animations.
-- **Real profiles.** Save, autoload, share codes and per-game lists. An interrupted save never damages a profile.
-- **20 themes.** Tokyo Night, Cyberpunk, Gruvbox, Mint and more, all contrast-checked. Make your own and share it as a code.
-- **18k icons.** Write an icon's name anywhere (`"eye"`, `"solar:target-bold"`). Lucide is built in.
-- **Hard to break.** A callback error flashes the element red and is listed; the UI keeps working.
-- **Ready to ship.** One line adds a Dashboard and a full Settings tab. Key system, tour, "What's new" and autocomplete types included.
+## Overview
 
-## Install
+LumeUI is a single-file Roblox Luau UI library built on layered dark surfaces. Separation is achieved through subtle surface steps rather than heavy outlines.
 
+- **Layered surfaces**: Panel (`#141416`), Card (`#1A1A1D`), Input/Row (`#202024`), and Hover (`#25252A`).
+- **Single periwinkle accent**: `#7C7CFF` applied deliberately to interactive controls.
+- **Micro-spring feedback**: `0.98` scale micro-bounce on press with 120–160ms transitions.
+- **WCAG contrast verified**: Muted text (`#8E8E99`) maintains over 5:1 contrast against all background surfaces.
+- **Accessible & keyboard ready**: Tab focus order, accent focus rings, and Escape dismissals.
+
+---
+
+## Quick Start
+
+### Load via Raw CDN
 ```lua
-local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/79650/gwanjkcdsjawbdnjascdas-ui-lib/refs/heads/main/qustah-ui-lib/dist/qustah-ui-lib.lua"))()
+local LumeUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/m0ndexy/ui-test/main/Source.luau"))()
+
+local Window = LumeUI:CreateWindow({
+    Name = "Lume",
+    Subtitle = "Green Screen",
+    Backdrop = true, -- Optional backdrop gradient (#8585FF to #5B5BD6)
+    Keybind = Enum.KeyCode.RightShift,
+    ReducedMotion = false,
+})
+
+-- Top-Left Watermark Pill
+local Watermark = Window:CreateWatermark({
+    Title = "Lume",
+    Subtitle = "Green Screen",
+})
+
+-- Floating Keybind List
+local KeybindList = Window:CreateKeybindList({
+    Title = "Keybind list",
+    Pinned = true,
+})
+
+-- Tab Navigation
+local LegitTab = Window:CreateTab({ Name = "Legit", Icon = "rbxassetid://6031265976" })
+local VisualsTab = Window:CreateTab({ Name = "Visuals", Icon = "rbxassetid://6034684930" })
+
+-- Left Column Section
+local Aimbot = LegitTab:CreateSection("Aimbot", 1)
+
+Aimbot:CreateToggle({
+    Name = "Enable aimbot",
+    CurrentValue = true,
+    HasChevron = true,
+    HasGear = true,
+    Callback = function(val)
+        print("Aimbot:", val)
+    end,
+})
+
+Aimbot:CreateSlider({
+    Name = "FOV size",
+    Range = { 0, 360 },
+    CurrentValue = 120,
+    Suffix = "px",
+    Callback = function(val)
+        print("FOV:", val)
+    end,
+})
+
+Aimbot:CreateRangeSlider({
+    Name = "Distance",
+    Min = 0,
+    Max = 1000,
+    Low = 50,
+    High = 400,
+    Suffix = "m",
+    Callback = function(low, high)
+        print("Distance range:", low, high)
+    end,
+})
+
+-- Right Column Section
+local Trigger = LegitTab:CreateSection("Triggerbot", 2)
+
+Trigger:CreateToggle({
+    Name = "Enable triggerbot",
+    CurrentValue = false,
+    Disabled = true,
+    HasGear = true,
+})
+
+Trigger:CreateSlider({
+    Name = "Delay",
+    Range = { 0, 500 },
+    CurrentValue = 120,
+    Suffix = "ms",
+    Callback = function(val)
+        print("Delay:", val)
+    end,
+})
+
+local WhitelistInput = Trigger:CreateInput({
+    Label = "Whitelist player",
+    Placeholder = "Username",
+})
+
+Trigger:CreateButton({
+    Name = "Add to whitelist",
+    Callback = function()
+        Window:Notify({
+            Title = "Lume",
+            Content = "Added " .. WhitelistInput.Get() .. " to whitelist",
+            Duration = 4,
+        })
+    end,
+})
+
+-- Toast Notification
+Window:Notify({
+    Title = "Lume",
+    Content = "something about making n doing uis",
+    Duration = 5,
+})
 ```
 
-<sub>The minified build is the same code and about 25% smaller: replace <code>qustah-ui-lib.lua</code> with <code>qustah-ui-lib.min.lua</code>.</sub>
+---
 
-## Quick start
+## Design Tokens
+
+| Token | Value | Hex | Usage |
+|---|---|---|---|
+| `BackdropTop` | `133, 133, 255` | `#8585FF` | Top of vertical backdrop gradient |
+| `BackdropBottom` | `91, 91, 214` | `#5B5BD6` | Bottom of vertical backdrop gradient |
+| `PanelSurface` | `20, 20, 22` | `#141416` | Main window shell, floating widgets |
+| `CardSurface` | `26, 26, 29` | `#1A1A1D` | Section cards, alternating table rows |
+| `InputSurface` | `32, 32, 36` | `#202024` | Input boxes, buttons, search field |
+| `HoverRow` | `37, 37, 42` | `#25252A` | Hover feedback surface |
+| `Accent` | `124, 124, 255` | `#7C7CFF` | Active checkbox, slider fill, left nav indicator |
+| `AccentHover` | `142, 142, 255` | `#8E8EFF` | Secondary logo emblem, accent highlights |
+| `TextPrimary` | `242, 242, 245` | `#F2F2F5` | Headings, active nav items, control labels |
+| `TextMuted` | `142, 142, 153` | `#8E8E99` | Subtitles, section headers, metadata stats |
+| `Border` | `255, 255, 255` | 4% opacity | Subtle 1px separation stroke |
+| `RadiusWindow` | `14px` | — | Window corners, keybind list corner |
+| `RadiusCard` | `10px` | — | Section cards, notification cards |
+| `RadiusRow` | `8px` | — | Inputs, buttons, sidebar rows |
+
+---
+
+## Components
+
+1. **Main Window**: Left sidebar (logo emblem, product title, live search box, nav items with 3px `#7C7CFF` left bar) + Right content zone (top bar category dropdown, breadcrumb `Page > Subpage`, 2-column cards).
+2. **Section Cards & Rows**:
+   - **Checkbox**: Accent fill with crisp checkmark, right-aligned chevron and gear buttons.
+   - **Slider**: Left label, right primary text value, thin track with accent fill, thumb visible on hover.
+   - **Range Slider**: Dual-range selection (e.g. `50m - 400m`) with accent track.
+   - **Text Input**: `#202024` surface, placeholder, and accent focus ring on active typing.
+   - **Button**: Full-width `#202024` button with 0.98 press micro-spring.
+   - **Disabled Row**: Muted text with blank, non-interactive checkbox.
+3. **Watermark Pill**: Floating top-left pill (`[Logo] [Name] | [Subtitle] | [FPS] | [Ping] | [Clock]`) with live FPS and ping telemetry.
+4. **Keybind List Widget**: Floating draggable widget with pin toggle, alternating rows, headers (`Function`, `Hotkey`, `Status`), and `...` status cycler.
+5. **Toast Notification**: Floating notification card with icon, title, close `×`, and a draining `#7C7CFF` progress bar that slides out automatically.
+
+---
+
+## Standalone File
+
+To run the complete library and showcase without any external network fetches, load `Showcase.luau`:
 
 ```lua
-local Window = Lib:CreateWindow({ Title = "Qustāh", Version = "V1.00", Folder = "Qustah" })
-Window:DashboardTab()         -- first tab: profile, session, modules, server tools
-
-local Main = Window:Tab({ Title = "Main", Icon = "eye" }):Card({ Title = "General" })
-Main:Toggle({ Title = "ESP", Flag = "esp", Default = true, Callback = function(on) print(on) end })
-Main:Slider({ Title = "Distance", Flag = "range", Min = 100, Max = 5000, Default = 1500, Suffix = "studs" })
-
-Window:SettingsTab()          -- theme, font, menu key, profiles...
-Window.Config:LoadAutoLoad()  -- loads the profile marked as autoload
+-- In Roblox Studio Command Bar or Executor:
+loadstring(readfile("Showcase.luau"))()
 ```
 
-## Showcase
+---
 
-<p align="center"><img src="qustah-ui-lib/assets/screens/tabs.gif" alt="Switching between the example's tabs" width="820"></p>
+## License
 
-### Themes
-
-<p align="center"><img src="qustah-ui-lib/assets/screens/themes.png" alt="Dark, Light, Tokyo Night, Cyberpunk, Gruvbox and Mint themes"></p>
-
-<p align="center"><sub>6 of the 20 built-in themes. You can also make your own and share it as a code.</sub></p>
-
-## Documentation
-
-Every option, with code, is in **[DOCS.md](qustah-ui-lib/DOCS.md)**. **[example.lua](qustah-ui-lib/example.lua)** builds the window in the GIF and uses every element once.
-
-### Elements
-
-<table>
-<tr>
-<td width="20%" valign="top"><b>Switches</b><br><br>Toggle<br>Checkbox</td>
-<td width="20%" valign="top"><b>Numbers</b><br><br>Slider<br>Range<br>Stepper</td>
-<td width="20%" valign="top"><b>Choices</b><br><br>Dropdown<br>Segment<br>Radio</td>
-<td width="20%" valign="top"><b>Colours</b><br><br>ColorPicker<br>Gradient<br>Swatches</td>
-<td width="20%" valign="top"><b>Text input</b><br><br>Input<br>TextArea<br>ActionInput<br>Keybind</td>
-</tr>
-<tr>
-<td width="20%" valign="top"><b>Buttons</b><br><br>Button</td>
-<td width="20%" valign="top"><b>Text</b><br><br>Label<br>Paragraph<br>Info<br>Divider<br>Code</td>
-<td width="20%" valign="top"><b>Live data</b><br><br>Progress<br>Stat<br>Graph<br>Console<br>Table</td>
-<td width="20%" valign="top"><b>Visual</b><br><br>Image<br>ImagePicker<br>PlayerList<br>Viewport</td>
-<td width="20%" valign="top"><b>Layout</b><br><br>Section<br>Row<br>Group<br>Tabs</td>
-</tr>
-<tr>
-<td width="20%" valign="top"><b>Dashboard</b><br><br>StatTiles<br>Gauges<br>Hero<br>StatusBars</td>
-<td width="20%" valign="top"><b>Switch sets</b><br><br>SwitchGrid<br>Tiles<br>Chips</td>
-<td width="20%" valign="top"><b>Activity</b><br><br>Timeline<br>Changelog<br>Notice<br>Checklist</td>
-<td width="20%" valign="top"><b>Settings</b><br><br>Search<br>ListItem<br>Gallery<br>ThemePreview<br>SideNav</td>
-<td width="20%" valign="top"><b>Collections</b><br><br>ItemCards<br>DiffList</td>
-</tr>
-</table>
-
-<sub>Every element can be saved in profiles, depend on another element, show a tooltip or help hint, be locked with a reason, and flashes red when its callback errors.</sub>
-
-### Guides
-
-<table>
-<tr>
-<td width="20%" valign="top"><b>Build</b><br><br><a href="qustah-ui-lib/DOCS.md#window">Window</a><br><a href="qustah-ui-lib/DOCS.md#tabs-pages-and-cards">Tabs, pages and cards</a><br><a href="qustah-ui-lib/DOCS.md#elements">Elements</a><br><a href="qustah-ui-lib/DOCS.md#flags">Flags</a></td>
-<td width="20%" valign="top"><b>Talk to the user</b><br><br><a href="qustah-ui-lib/DOCS.md#notifications">Notifications</a><br><a href="qustah-ui-lib/DOCS.md#dialogs">Dialogs</a><br><a href="qustah-ui-lib/DOCS.md#tour">Tour</a><br><a href="qustah-ui-lib/DOCS.md#changelog">Changelog</a></td>
-<td width="20%" valign="top"><b>Save and style</b><br><br><a href="qustah-ui-lib/DOCS.md#configs-and-profiles">Configs and profiles</a><br><a href="qustah-ui-lib/DOCS.md#themes">Themes</a><br><a href="qustah-ui-lib/DOCS.md#icons">Icons</a></td>
-<td width="20%" valign="top"><b>Built in</b><br><br><a href="qustah-ui-lib/DOCS.md#built-in-tabs">Dashboard and Settings</a><br><a href="qustah-ui-lib/DOCS.md#overlays">Overlays</a><br><a href="qustah-ui-lib/DOCS.md#window-extras">Window extras</a><br><a href="qustah-ui-lib/DOCS.md#links">Links</a></td>
-<td width="20%" valign="top"><b>Ship it</b><br><br><a href="qustah-ui-lib/DOCS.md#status-errors-and-kicks">Status, errors and kicks</a><br><a href="qustah-ui-lib/DOCS.md#key-system">Key system</a><br><a href="qustah-ui-lib/DOCS.md#secure-mode">Secure mode</a><br><a href="qustah-ui-lib/DOCS.md#development">Development</a></td>
-</tr>
-</table>
+MIT License. See [LICENSE](LICENSE) for details.
