@@ -81,11 +81,11 @@ function Card.new(page, column, cfg, order)
     Theme.bind(frame, "BackgroundColor3", "card")
     corner(frame, 8)
     Theme.bind(stroke(frame), "Color", "line")
-    Util.padding(frame, 14, 14, 8, 10)
-    Util.list(frame, 4)
+    Util.padding(frame, 14, 14, 10, 12)
+    Util.list(frame, 8)
     if cfg.Title then
-        -- accent dot with a soft glow + medium heading (Qustah card title); Icon = "name" replaces the dot
-        local head = create("Frame", { Name = "Heading", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 20), LayoutOrder = 0, Parent = frame })
+        -- accent dot with a soft glow + bold heading (macOS section title); Icon = "name" replaces the dot
+        local head = create("Frame", { Name = "Heading", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 22), LayoutOrder = 0, Parent = frame })
         local icon = cfg.Icon and Icons.themed(head, cfg.Icon, 14, "accent", { Name = "CardIcon", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, -1, 0.5, 0) })
         -- Dot = false (or CreateWindow({ CardDots = false }) for every card): plain title when there is no icon
         local dotted = cfg.Dot
@@ -93,19 +93,19 @@ function Card.new(page, column, cfg, order)
         local lead = icon and 18 or (dotted and 13 or 0)
         for ring = 3, ((icon or not dotted) and 4 or 0), -1 do
             local dot = create("Frame", {
-                Name = ring == 0 and "Dot" or "Glow", Position = UDim2.fromOffset(-ring, 7 - ring), Size = UDim2.fromOffset(6 + ring * 2, 6 + ring * 2),
+                Name = ring == 0 and "Dot" or "Glow", Position = UDim2.fromOffset(-ring, 8 - ring), Size = UDim2.fromOffset(6 + ring * 2, 6 + ring * 2),
                 BorderSizePixel = 0, BackgroundTransparency = ring == 0 and 0 or 0.91, Parent = head,
             })
             Theme.bind(dot, "BackgroundColor3", "accent")
             corner(dot, ring == 0 and 3 or 6)
         end
         local collapsible = cfg.Collapsible ~= false
-        local title = label(head, tostring(cfg.Title), 10, { Position = UDim2.fromOffset(lead, 0), Size = UDim2.new(1, -lead - (collapsible and 22 or 0), 1, 0), Font = Enum.Font.GothamMedium })
+        local title = label(head, tostring(cfg.Title), 13, { Position = UDim2.fromOffset(lead, 0), Size = UDim2.new(1, -lead - (collapsible and 22 or 0), 1, 0), Font = Enum.Font.GothamBold })
         Theme.bind(title, "TextColor3", "heading")
         self.titleLabel = title
-        -- Desc = "...": a muted line under the title
+        -- Desc = "...": a clean hint line under the title
         if cfg.Desc then
-            local desc = label(frame, tostring(cfg.Desc), 9, { Name = "CardDesc", Size = UDim2.new(1, 0, 0, 12), AutomaticSize = Enum.AutomaticSize.Y, TextWrapped = true, TextTruncate = Enum.TextTruncate.None, LayoutOrder = 1 })
+            local desc = label(frame, tostring(cfg.Desc), 11, { Name = "CardDesc", Size = UDim2.new(1, 0, 0, 14), AutomaticSize = Enum.AutomaticSize.Y, TextWrapped = true, TextTruncate = Enum.TextTruncate.None, LayoutOrder = 1 })
             Theme.bind(desc, "TextColor3", "muted")
             self.descLabel = desc
         end

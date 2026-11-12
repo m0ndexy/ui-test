@@ -11,7 +11,7 @@ local create, corner = Util.create, Util.corner
 return function(card, cfg)
     local window = card.window
     local bindable = cfg.Bindable or cfg.Bind ~= nil
-    local row, title, desc = Base.row(card, cfg, cfg.Desc and 46 or 36, { button = true, right = 50, helpRight = 44 })
+    local row, title, desc = Base.row(card, cfg, cfg.Desc and 48 or 36, { button = true, right = 50, helpRight = 44 })
     local switch = create("TextButton", {
         Name = "Switch", Text = "", AutoButtonColor = false, BorderSizePixel = 0, AnchorPoint = Vector2.new(1, 0.5),
         Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(34, 18), Parent = row,
@@ -54,11 +54,11 @@ return function(card, cfg)
     local function render(animate)
         local on = element.Value
         local duration = animate and 0.2 or nil
-        -- Qustah switch: on = input tinted with the accent, knob always light grey, accent rim when on
-        Theme.tweenTo(switch, "BackgroundColor3", on and "toggleOn" or "buttonEdge", duration)
+        -- macOS switch: on = vibrant Apple accent, knob pure white
+        Theme.tweenTo(switch, "BackgroundColor3", on and "accent" or "buttonEdge", duration)
         Theme.bind(knob, "BackgroundColor3", "knob")
         Theme.tweenTo(rim, "Color", on and "accent" or "line", duration)
-        rim.Transparency = on and 0.6 or 0.18
+        rim.Transparency = on and 0.35 or 0.18
         local targetX = on and 18 or 2
         local targetPos = UDim2.fromOffset(targetX, 2)
         if animate then

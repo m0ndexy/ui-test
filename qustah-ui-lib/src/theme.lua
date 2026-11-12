@@ -16,11 +16,11 @@ Theme.colors = {
     line       = rgb(36, 36, 39),    -- card outlines, dividers
     edge       = rgb(30, 30, 30),    -- window outline
     buttonEdge = rgb(46, 46, 50),    -- button outline, switch off
-    text       = rgb(168, 168, 172),
-    muted      = rgb(118, 118, 124),
-    heading    = rgb(205, 205, 210),
-    knob       = rgb(190, 190, 195),
-    accent     = rgb(177, 178, 183), -- Qustah neutral; Lib:SetAccent changes it
+    text       = rgb(200, 200, 206), -- high-contrast body text (WCAG AAA)
+    muted      = rgb(148, 148, 154), -- crisp hints (WCAG 6.1:1 contrast ratio)
+    heading    = rgb(245, 245, 247), -- high-contrast clean white headings
+    knob       = rgb(255, 255, 255), -- pure white switch knob
+    accent     = rgb(10, 132, 255),  -- Apple System Blue (#0A84FF)
     -- states (footer dot, module rows, hints, danger buttons)
     success    = rgb(110, 200, 130),
     warning    = rgb(215, 180, 120),

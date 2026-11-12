@@ -224,10 +224,10 @@ function Window:_build()
     })
     Theme.bind(dot, "ImageColor3", "success")
     -- one status bar: [dot] Connected   Mock Place ........ [NUM 8] ESP / SILENT AIM   [RSHIFT] MENU
-    local status = label(footer, "Connected", 10, { Name = "Status", Position = UDim2.fromOffset(31, 0), Size = UDim2.fromScale(0, 1), AutomaticSize = Enum.AutomaticSize.X, TextTruncate = Enum.TextTruncate.None })
+    local status = label(footer, "Connected", 11, { Name = "Status", Position = UDim2.fromOffset(31, 0), Size = UDim2.fromScale(0, 1), AutomaticSize = Enum.AutomaticSize.X, TextTruncate = Enum.TextTruncate.None, Font = Enum.Font.GothamMedium })
     Theme.bind(status, "TextColor3", "text")
     Glow.add(status, { Base = "text", Shine = "heading", GlowTransparency = 0.92 })
-    local centre = label(footer, tostring(self.cfg.Footer or ""), 10, { Name = "Centre", Size = UDim2.new(0, 100, 1, 0) })
+    local centre = label(footer, tostring(self.cfg.Footer or ""), 11, { Name = "Centre", Size = UDim2.new(0, 100, 1, 0), Font = Enum.Font.Gotham })
     Theme.bind(centre, "TextColor3", "muted")
     -- key hints on the right of the status bar (Left hints first, then Right ones)
     self.hintBar = create("Frame", {

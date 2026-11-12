@@ -89,28 +89,28 @@ BorderSizePixel=0,LayoutOrder=order or 0,Parent=column,
 Theme.bind(frame,"BackgroundColor3","card")
 corner(frame,8)
 Theme.bind(stroke(frame),"Color","line")
-Util.padding(frame,14,14,8,10)
-Util.list(frame,4)
+Util.padding(frame,14,14,10,12)
+Util.list(frame,8)
 if cfg.Title then
-local head=create("Frame",{Name="Heading",BackgroundTransparency=1,Size=UDim2.new(1,0,0,20),LayoutOrder=0,Parent=frame})
+local head=create("Frame",{Name="Heading",BackgroundTransparency=1,Size=UDim2.new(1,0,0,22),LayoutOrder=0,Parent=frame})
 local icon=cfg.Icon and Icons.themed(head,cfg.Icon,14,"accent",{Name="CardIcon",AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,-1,0.5,0)})
 local dotted=cfg.Dot
 if dotted==nil then dotted=not(page.window and page.window.cfg and page.window.cfg.CardDots==false)end
 local lead=icon and 18 or(dotted and 13 or 0)
 for ring=3,((icon or not dotted)and 4 or 0),-1 do
 local dot=create("Frame",{
-Name=ring==0 and"Dot"or"Glow",Position=UDim2.fromOffset(-ring,7-ring),Size=UDim2.fromOffset(6+ring*2,6+ring*2),
+Name=ring==0 and"Dot"or"Glow",Position=UDim2.fromOffset(-ring,8-ring),Size=UDim2.fromOffset(6+ring*2,6+ring*2),
 BorderSizePixel=0,BackgroundTransparency=ring==0 and 0 or 0.91,Parent=head,
 })
 Theme.bind(dot,"BackgroundColor3","accent")
 corner(dot,ring==0 and 3 or 6)
 end
 local collapsible=cfg.Collapsible~=false
-local title=label(head,tostring(cfg.Title),10,{Position=UDim2.fromOffset(lead,0),Size=UDim2.new(1,-lead-(collapsible and 22 or 0),1,0),Font=Enum.Font.GothamMedium})
+local title=label(head,tostring(cfg.Title),13,{Position=UDim2.fromOffset(lead,0),Size=UDim2.new(1,-lead-(collapsible and 22 or 0),1,0),Font=Enum.Font.GothamBold})
 Theme.bind(title,"TextColor3","heading")
 self.titleLabel=title
 if cfg.Desc then
-local desc=label(frame,tostring(cfg.Desc),9,{Name="CardDesc",Size=UDim2.new(1,0,0,12),AutomaticSize=Enum.AutomaticSize.Y,TextWrapped=true,TextTruncate=Enum.TextTruncate.None,LayoutOrder=1})
+local desc=label(frame,tostring(cfg.Desc),11,{Name="CardDesc",Size=UDim2.new(1,0,0,14),AutomaticSize=Enum.AutomaticSize.Y,TextWrapped=true,TextTruncate=Enum.TextTruncate.None,LayoutOrder=1})
 Theme.bind(desc,"TextColor3","muted")
 self.descLabel=desc
 end
@@ -1445,15 +1445,16 @@ Size=UDim2.new(1,0,0,height),LayoutOrder=card:_order(),Parent=card.body,
 })
 if opts.button then row.Text=""row.AutoButtonColor=false end
 local right=opts.right or 0
-local title=label(row,tostring(cfg.Title or""),11,{
-Name="Title",Position=UDim2.fromOffset(0,cfg.Desc and 3 or 0),
+local title=label(row,tostring(cfg.Title or""),12,{
+Name="Title",Position=UDim2.fromOffset(0,cfg.Desc and 2 or 0),
 Size=UDim2.new(1,-right,0,cfg.Desc and 18 or(opts.titleHeight or height)),
+Font=Enum.Font.GothamMedium,
 })
-Theme.bind(title,"TextColor3",cfg.Risky and"danger"or"text")
+Theme.bind(title,"TextColor3",cfg.Risky and"danger"or"heading")
 if type(cfg.Risky)=="string"and not cfg.Help then cfg.Help=cfg.Risky end
 local desc
 if cfg.Desc then
-desc=label(row,tostring(cfg.Desc),9,{Name="Desc",Position=UDim2.fromOffset(0,23),Size=UDim2.new(1,-right,0,14)})
+desc=label(row,tostring(cfg.Desc),11,{Name="Desc",Position=UDim2.fromOffset(0,21),Size=UDim2.new(1,-right,0,16),Font=Enum.Font.Gotham})
 Theme.bind(desc,"TextColor3","muted")
 end
 if cfg.Icon and not opts.noIcon then
@@ -1811,13 +1812,13 @@ local Base=require("elements/base")
 local Icons=require("icons")
 local create,corner,stroke=Util.create,Util.corner,Util.stroke
 local STYLES={
-Default={bg="input",bgT=0,text="text",edge="buttonEdge",edgeT=0,
+Default={bg="input",bgT=0,text="heading",edge="buttonEdge",edgeT=0,
 hover={bg="hover",bgT=0,text="heading"}},
 Primary={bg="accent",bgT=0,text="onAccent",edge="accent",edgeT=0,
 hover={bg="accent",bgT=0.15,text="onAccent"}},
 Soft={bg="accent",bgT=0.86,text="accent",edge="accent",edgeT=0.72,
 hover={bg="accent",bgT=0.76,text="accent"}},
-Outline={bg="hover",bgT=1,text="text",edge="buttonEdge",edgeT=0,
+Outline={bg="hover",bgT=1,text="heading",edge="buttonEdge",edgeT=0,
 hover={bg="hover",bgT=0.4,text="heading"}},
 Ghost={bg="hover",bgT=1,text="muted",edge="buttonEdge",edgeT=1,
 hover={bg="hover",bgT=0,text="heading"}},
@@ -1826,7 +1827,7 @@ hover={bg="danger",bgT=0.74,text="danger"}},
 Link={bg="hover",bgT=1,text="accent",edge="accent",edgeT=1,
 hover={bg="hover",bgT=1,text="heading"}},
 }
-local SIZES={Small={22,9,12},Default={28,10,14},Large={34,11,16}}
+local SIZES={Small={24,11,12},Default={32,12,14},Large={38,13,16}}
 local ARROW=26
 local ITEM=26
 local function styleName(value)
@@ -5090,31 +5091,34 @@ if max<min then min,max=max,min end
 local step=tonumber(cfg.Step)or 1
 local suffix=cfg.Suffix and(" "..tostring(cfg.Suffix))or""
 local decimals=Util.decimals(step)
-local top=cfg.Desc and 38 or 22
-local row,title,desc=Base.row(card,cfg,top+18,{right=90,titleHeight=22,helpRight=84,helpY=11})
-if desc then desc.Size=UDim2.new(1,0,0,14)end
+local top=cfg.Desc and 42 or 24
+local row,title,desc=Base.row(card,cfg,top+20,{right=70,titleHeight=22,helpRight=64,helpY=11})
+if desc then desc.Size=UDim2.new(1,0,0,16)end
 local box=create("TextBox",{
-Name="Value",AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,0,0,1),Size=UDim2.fromOffset(78,20),
-BackgroundTransparency=1,BorderSizePixel=0,Text="",TextSize=10,Font=Enum.Font.GothamMedium,
-TextXAlignment=Enum.TextXAlignment.Right,ClearTextOnFocus=false,Parent=row,
+Name="Value",AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,0,0,0),Size=UDim2.fromOffset(54,20),
+BackgroundTransparency=0.5,BorderSizePixel=0,Text="",TextSize=12,Font=Enum.Font.GothamBold,
+TextXAlignment=Enum.TextXAlignment.Center,ClearTextOnFocus=false,Parent=row,
 })
-local boxPad=Util.padding(box,0,0,0,0)
-box.Focused:Connect(function()box.BackgroundTransparency=0.2 boxPad.PaddingRight=UDim.new(0,6)boxPad.PaddingLeft=UDim.new(0,6)end)
-box.FocusLost:Connect(function()box.BackgroundTransparency=1 boxPad.PaddingRight=UDim.new(0,0)boxPad.PaddingLeft=UDim.new(0,0)end)
-Theme.bind(box,"TextColor3","text")
-Theme.bind(box,"BackgroundColor3","base")
-corner(box,6)
+Theme.bind(box,"TextColor3","heading")
+Theme.bind(box,"BackgroundColor3","input")
+corner(box,5)
+local boxStroke=Util.stroke(box,nil,0.45)
+Theme.bind(boxStroke,"Color","buttonEdge")
+box.Focused:Connect(function()box.BackgroundTransparency=0.1 Theme.tweenTo(boxStroke,"Color","accent",0.12)end)
+box.FocusLost:Connect(function()box.BackgroundTransparency=0.5 Theme.tweenTo(boxStroke,"Color","buttonEdge",0.12)end)
 local sideIcons=type(cfg.Icons)=="table"and cfg.Icons or nil
 local inset=sideIcons and 20 or 0
-local track=create("Frame",{Name="Track",Position=UDim2.new(0,inset,0,top+8),Size=UDim2.new(1,-inset*2,0,2),BorderSizePixel=0,Parent=row})
+local track=create("Frame",{Name="Track",Position=UDim2.new(0,inset,0,top+8),Size=UDim2.new(1,-inset*2,0,4),BorderSizePixel=0,Parent=row})
 Theme.bind(track,"BackgroundColor3","buttonEdge")
-corner(track,1)
+corner(track,2)
 local fill=create("Frame",{Name="Fill",Size=UDim2.fromScale(0,1),BorderSizePixel=0,Parent=track})
 Theme.bind(fill,"BackgroundColor3","accent")
-corner(fill,1)
-local knob=create("Frame",{Name="Knob",AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0,0.5),Size=UDim2.fromOffset(10,10),BorderSizePixel=0,ZIndex=2,Parent=track})
-Theme.bind(knob,"BackgroundColor3","accent")
-corner(knob,5)
+corner(fill,2)
+local knob=create("Frame",{Name="Knob",AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0,0.5),Size=UDim2.fromOffset(12,12),BorderSizePixel=0,ZIndex=2,Parent=track})
+Theme.bind(knob,"BackgroundColor3","heading")
+corner(knob,6)
+local knobStroke=Util.stroke(knob,nil,0.3)
+Theme.bind(knobStroke,"Color","accent")
 local knobScale=create("UIScale",{Name="macOSKnobScale",Scale=1,Parent=knob})
 local reach=Util.isTouch()and 8 or 0
 local hit=create("TextButton",{Name="Hit",Text="",AutoButtonColor=false,BackgroundTransparency=1,Position=UDim2.new(0,inset-6,0,top-reach),Size=UDim2.new(1,12-inset*2,0,18+reach*2),ZIndex=3,Parent=row})
@@ -6166,7 +6170,7 @@ local create,corner=Util.create,Util.corner
 return function(card,cfg)
 local window=card.window
 local bindable=cfg.Bindable or cfg.Bind~=nil
-local row,title,desc=Base.row(card,cfg,cfg.Desc and 46 or 36,{button=true,right=50,helpRight=44})
+local row,title,desc=Base.row(card,cfg,cfg.Desc and 48 or 36,{button=true,right=50,helpRight=44})
 local switch=create("TextButton",{
 Name="Switch",Text="",AutoButtonColor=false,BorderSizePixel=0,AnchorPoint=Vector2.new(1,0.5),
 Position=UDim2.new(1,0,0.5,0),Size=UDim2.fromOffset(34,18),Parent=row,
@@ -6204,10 +6208,10 @@ element.Value=cfg.Default==true
 local function render(animate)
 local on=element.Value
 local duration=animate and 0.2 or nil
-Theme.tweenTo(switch,"BackgroundColor3",on and"toggleOn"or"buttonEdge",duration)
+Theme.tweenTo(switch,"BackgroundColor3",on and"accent"or"buttonEdge",duration)
 Theme.bind(knob,"BackgroundColor3","knob")
 Theme.tweenTo(rim,"Color",on and"accent"or"line",duration)
-rim.Transparency=on and 0.6 or 0.18
+rim.Transparency=on and 0.35 or 0.18
 local targetX=on and 18 or 2
 local targetPos=UDim2.fromOffset(targetX,2)
 if animate then
@@ -10103,11 +10107,11 @@ hover=rgb(33,33,36),
 line=rgb(36,36,39),
 edge=rgb(30,30,30),
 buttonEdge=rgb(46,46,50),
-text=rgb(168,168,172),
-muted=rgb(118,118,124),
-heading=rgb(205,205,210),
-knob=rgb(190,190,195),
-accent=rgb(177,178,183),
+text=rgb(200,200,206),
+muted=rgb(148,148,154),
+heading=rgb(245,245,247),
+knob=rgb(255,255,255),
+accent=rgb(10,132,255),
 success=rgb(110,200,130),
 warning=rgb(215,180,120),
 danger=rgb(215,130,130),
@@ -11425,10 +11429,10 @@ Name="StatusDot",Image="rbxassetid://122485335253573",BackgroundTransparency=1,B
 AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,16,0.5,0),Size=UDim2.fromOffset(9,9),Parent=footer,
 })
 Theme.bind(dot,"ImageColor3","success")
-local status=label(footer,"Connected",10,{Name="Status",Position=UDim2.fromOffset(31,0),Size=UDim2.fromScale(0,1),AutomaticSize=Enum.AutomaticSize.X,TextTruncate=Enum.TextTruncate.None})
+local status=label(footer,"Connected",11,{Name="Status",Position=UDim2.fromOffset(31,0),Size=UDim2.fromScale(0,1),AutomaticSize=Enum.AutomaticSize.X,TextTruncate=Enum.TextTruncate.None,Font=Enum.Font.GothamMedium})
 Theme.bind(status,"TextColor3","text")
 Glow.add(status,{Base="text",Shine="heading",GlowTransparency=0.92})
-local centre=label(footer,tostring(self.cfg.Footer or""),10,{Name="Centre",Size=UDim2.new(0,100,1,0)})
+local centre=label(footer,tostring(self.cfg.Footer or""),11,{Name="Centre",Size=UDim2.new(0,100,1,0),Font=Enum.Font.Gotham})
 Theme.bind(centre,"TextColor3","muted")
 self.hintBar=create("Frame",{
 Name="KeyHints",BackgroundTransparency=1,AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,-26,0,0),

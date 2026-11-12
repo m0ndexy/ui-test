@@ -27,13 +27,13 @@ local create, corner, stroke = Util.create, Util.corner, Util.stroke
 
 -- each style: background role + transparency, text role, outline role + transparency; "hover" is the same set on hover
 local STYLES = {
-    Default = { bg = "input", bgT = 0, text = "text", edge = "buttonEdge", edgeT = 0,
+    Default = { bg = "input", bgT = 0, text = "heading", edge = "buttonEdge", edgeT = 0,
         hover = { bg = "hover", bgT = 0, text = "heading" } },
     Primary = { bg = "accent", bgT = 0, text = "onAccent", edge = "accent", edgeT = 0,
         hover = { bg = "accent", bgT = 0.15, text = "onAccent" } },
     Soft = { bg = "accent", bgT = 0.86, text = "accent", edge = "accent", edgeT = 0.72,
         hover = { bg = "accent", bgT = 0.76, text = "accent" } },
-    Outline = { bg = "hover", bgT = 1, text = "text", edge = "buttonEdge", edgeT = 0,
+    Outline = { bg = "hover", bgT = 1, text = "heading", edge = "buttonEdge", edgeT = 0,
         hover = { bg = "hover", bgT = 0.4, text = "heading" } },
     Ghost = { bg = "hover", bgT = 1, text = "muted", edge = "buttonEdge", edgeT = 1,
         hover = { bg = "hover", bgT = 0, text = "heading" } },
@@ -42,7 +42,7 @@ local STYLES = {
     Link = { bg = "hover", bgT = 1, text = "accent", edge = "accent", edgeT = 1,
         hover = { bg = "hover", bgT = 1, text = "heading" } },
 }
-local SIZES = { Small = { 22, 9, 12 }, Default = { 28, 10, 14 }, Large = { 34, 11, 16 } } -- height, text, icon (icon and height both even: no half pixel)
+local SIZES = { Small = { 24, 11, 12 }, Default = { 32, 12, 14 }, Large = { 38, 13, 16 } } -- height, text, icon (icon and height both even: no half pixel)
 local ARROW = 26 -- width of the split button's arrow part
 local ITEM = 26  -- menu row height
 

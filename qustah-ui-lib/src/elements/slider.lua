@@ -17,33 +17,35 @@ return function(card, cfg)
     local step = tonumber(cfg.Step) or 1
     local suffix = cfg.Suffix and (" " .. tostring(cfg.Suffix)) or ""
     local decimals = Util.decimals(step)
-    local top = cfg.Desc and 38 or 22
-    local row, title, desc = Base.row(card, cfg, top + 18, { right = 90, titleHeight = 22, helpRight = 84, helpY = 11 })
+    local top = cfg.Desc and 42 or 24
+    local row, title, desc = Base.row(card, cfg, top + 20, { right = 70, titleHeight = 22, helpRight = 64, helpY = 11 })
 
-    if desc then desc.Size = UDim2.new(1, 0, 0, 14) end -- the value sits on the title line only
+    if desc then desc.Size = UDim2.new(1, 0, 0, 16) end -- the value sits on the title line only
     local box = create("TextBox", {
-        Name = "Value", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 0, 0, 1), Size = UDim2.fromOffset(78, 20),
-        BackgroundTransparency = 1, BorderSizePixel = 0, Text = "", TextSize = 10, Font = Enum.Font.GothamMedium,
-        TextXAlignment = Enum.TextXAlignment.Right, ClearTextOnFocus = false, Parent = row,
+        Name = "Value", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 0, 0, 0), Size = UDim2.fromOffset(54, 20),
+        BackgroundTransparency = 0.5, BorderSizePixel = 0, Text = "", TextSize = 12, Font = Enum.Font.GothamBold,
+        TextXAlignment = Enum.TextXAlignment.Center, ClearTextOnFocus = false, Parent = row,
     })
-    -- value sits flush right like the other controls; while typing it gets a small field
-    local boxPad = Util.padding(box, 0, 0, 0, 0)
-    box.Focused:Connect(function() box.BackgroundTransparency = 0.2 boxPad.PaddingRight = UDim.new(0, 6) boxPad.PaddingLeft = UDim.new(0, 6) end)
-    box.FocusLost:Connect(function() box.BackgroundTransparency = 1 boxPad.PaddingRight = UDim.new(0, 0) boxPad.PaddingLeft = UDim.new(0, 0) end)
-    Theme.bind(box, "TextColor3", "text")
-    Theme.bind(box, "BackgroundColor3", "base")
-    corner(box, 6)
+    Theme.bind(box, "TextColor3", "heading")
+    Theme.bind(box, "BackgroundColor3", "input")
+    corner(box, 5)
+    local boxStroke = Util.stroke(box, nil, 0.45)
+    Theme.bind(boxStroke, "Color", "buttonEdge")
+    box.Focused:Connect(function() box.BackgroundTransparency = 0.1 Theme.tweenTo(boxStroke, "Color", "accent", 0.12) end)
+    box.FocusLost:Connect(function() box.BackgroundTransparency = 0.5 Theme.tweenTo(boxStroke, "Color", "buttonEdge", 0.12) end)
     local sideIcons = type(cfg.Icons) == "table" and cfg.Icons or nil
     local inset = sideIcons and 20 or 0
-    local track = create("Frame", { Name = "Track", Position = UDim2.new(0, inset, 0, top + 8), Size = UDim2.new(1, -inset * 2, 0, 2), BorderSizePixel = 0, Parent = row })
+    local track = create("Frame", { Name = "Track", Position = UDim2.new(0, inset, 0, top + 8), Size = UDim2.new(1, -inset * 2, 0, 4), BorderSizePixel = 0, Parent = row })
     Theme.bind(track, "BackgroundColor3", "buttonEdge")
-    corner(track, 1)
+    corner(track, 2)
     local fill = create("Frame", { Name = "Fill", Size = UDim2.fromScale(0, 1), BorderSizePixel = 0, Parent = track })
     Theme.bind(fill, "BackgroundColor3", "accent")
-    corner(fill, 1)
-    local knob = create("Frame", { Name = "Knob", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0, 0.5), Size = UDim2.fromOffset(10, 10), BorderSizePixel = 0, ZIndex = 2, Parent = track })
-    Theme.bind(knob, "BackgroundColor3", "accent")
-    corner(knob, 5)
+    corner(fill, 2)
+    local knob = create("Frame", { Name = "Knob", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0, 0.5), Size = UDim2.fromOffset(12, 12), BorderSizePixel = 0, ZIndex = 2, Parent = track })
+    Theme.bind(knob, "BackgroundColor3", "heading")
+    corner(knob, 6)
+    local knobStroke = Util.stroke(knob, nil, 0.3)
+    Theme.bind(knobStroke, "Color", "accent")
     local knobScale = create("UIScale", { Name = "macOSKnobScale", Scale = 1, Parent = knob })
     -- (taller on touch screens: easier to catch with a finger)
     local reach = Util.isTouch() and 8 or 0
